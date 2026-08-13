@@ -1,0 +1,37 @@
+services:
+  cyberbots-go2:
+    build: .
+    image: cyberbots-go2:latest
+
+    # CUDA: requer nvidia-container-runtime instalado no Jetson
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
+
+    # Rede host: necessário para acessar a rede interna do Go2 (192.168.123.x)
+    # e para o WebRTC funcionar corretamente com ICE/STUN
+    network_mode: host
+
+    # Variáveis de ambiente — copie .env.example para .env e preencha
+    env_file:
+      - .env
+
+    volumes:
+      # Pasta de faces — adicione as fotos aqui antes de rodar
+      - ./faces:/app/faces:ro
+
+      # Cache dos modelos InsightFace — evita baixar a cada restart
+      - insightface_models:/root/.insightface/models
+
+    restart: unless-stopped
+
+    # Logs com timestamp
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  insightface_models:

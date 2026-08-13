@@ -1,0 +1,24 @@
+# Configuração local (contém senhas)
+.env
+
+# Fotos das faces (privacidade — NUNCA commitar)
+faces/*
+!faces/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+venv/
+.venv/
+
+# Docker
+*.tar
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
