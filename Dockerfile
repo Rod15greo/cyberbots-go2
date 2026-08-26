@@ -58,6 +58,13 @@ RUN pip3 install --no-cache-dir \
     numpy \
     Pillow
 
+# ── cryptography + pyOpenSSL pinados — versões compatíveis com DTLS ──────────
+# Pi (que funcionava) usava cryptography==38.0.4 + pyOpenSSL==23.0.0.
+# cryptography>=43 quebra DTLS silenciosamente em Python 3.8/3.10 via pyOpenSSL.
+RUN pip3 install --no-cache-dir \
+    "cryptography==38.0.4" \
+    "pyOpenSSL==23.0.0"
+
 # ── aiortc e dependências WebRTC ─────────────────────────────
 RUN pip3 install --no-cache-dir \
     aiortc \
