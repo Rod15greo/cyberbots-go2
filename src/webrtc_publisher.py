@@ -80,7 +80,7 @@ class WebRTCPublisher:
 
     @property
     def track(self) -> FrameTrack:
-        return self._track
+        return self._track  # sempre aponta para a track atual da PC vigente
 
     async def run(self):
         """Loop principal — conecta ao servidor e mantém conexão WebSocket."""
@@ -131,15 +131,17 @@ class WebRTCPublisher:
                     sdp_mid  = data.get("sdpMid", "0") or "0"
                     sdp_idx  = int(data.get("sdpMLineIndex", 0) or 0)
                     ice_cand = RTCIceCandidate(
-                        component    = parsed.component,
-                        foundation   = parsed.foundation,
-                        ip           = parsed.host,
-                        port         = parsed.port,
-                        priority     = parsed.priority,
-                        protocol     = parsed.transport,
-                        type         = parsed.type,
-                        sdpMid       = sdp_mid,
-                        sdpMLineIndex= sdp_idx,
+                        component     = parsed.component,
+                        foundation    = parsed.foundation,
+                        ip            = parsed.host,
+                        port          = parsed.port,
+                        priority      = parsed.priority,
+                        protocol      = parsed.transport,
+                        type          = parsed.type,
+                        relatedAddress= getattr(parsed, "related_address", None),
+                        relatedPort   = getattr(parsed, "related_port", None),
+                        sdpMid        = sdp_mid,
+                        sdpMLineIndex = sdp_idx,
                     )
                     await self._pc.addIceCandidate(ice_cand)
                 except Exception as e:
@@ -154,13 +156,14 @@ class WebRTCPublisher:
             self._pc = None
             logger.info("PeerConnection anterior fechada")
 
+        # Cria nova track a cada PC — track fechada pelo PC anterior não pode ser reutilizada
+        self._track = FrameTrack()
+
         ice_servers = [
             RTCIceServer(urls="stun:stun.l.google.com:19302"),
             RTCIceServer(urls=TURN_URL, username=TURN_USER, credential=TURN_PASS),
         ]
         self._pc = RTCPeerConnection(RTCConfiguration(iceServers=ice_servers))
-
-        # Reutiliza o mesmo FrameTrack em cada nova PC
         self._pc.addTrack(self._track)
 
         @self._pc.on("icecandidate")
